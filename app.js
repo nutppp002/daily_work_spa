@@ -173,31 +173,50 @@ function renderLogin() {
 
 function renderDashboard(user) {
     appDiv.innerHTML = `
-        <div class="topbar">
-            <div class="topbar-brand">
-                <i class="bi bi-calendar2-check-fill"></i> ระบบแผนงานประจำวัน
+        <nav class="navbar navbar-expand-lg navbar-dark shadow-sm sticky-top" style="background: linear-gradient(135deg, #1a5dc8, #0d2e6b);">
+            <div class="container-fluid px-3">
+                <a class="navbar-brand fw-bold" href="#dashboard">
+                    <i class="bi bi-calendar2-check-fill"></i> ระบบแผนงานประจำวัน
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#topMenu">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                
+                <div class="collapse navbar-collapse" id="topMenu">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a href="#dashboard" class="nav-link" id="nav-dashboard"><i class="bi bi-speedometer2"></i> แดชบอร์ด</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#plans" class="nav-link" id="nav-plans"><i class="bi bi-list-task"></i> แผนงานเช้า</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#summaries" class="nav-link" id="nav-summaries"><i class="bi bi-journal-check"></i> สรุปงานเย็น</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#morningtalk" class="nav-link" id="nav-morningtalk"><i class="bi bi-chat-square-text"></i> Morning Talk</a>
+                        </li>
+                        ${user.is_admin ? `
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="adminMenu" role="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-shield-lock"></i> ผู้ดูแลระบบ
+                            </a>
+                            <ul class="dropdown-menu shadow border-0 mt-2">
+                                <li><a class="dropdown-item text-dark" href="#projects" id="nav-projects"><i class="bi bi-folder2 text-secondary"></i> โครงการ</a></li>
+                                <li><a class="dropdown-item text-dark" href="#members" id="nav-members"><i class="bi bi-people text-secondary"></i> สมาชิก</a></li>
+                            </ul>
+                        </li>
+                        ` : ''}
+                    </ul>
+                    <div class="d-flex align-items-center text-white gap-3 ms-auto">
+                        <span class="fw-bold"><i class="bi bi-person-circle me-1"></i> ${user.nickname}</span>
+                        <button class="btn btn-sm btn-outline-light" id="logoutBtn"><i class="bi bi-box-arrow-right"></i> ออกจากระบบ</button>
+                    </div>
+                </div>
             </div>
-            <div class="d-flex align-items-center gap-3">
-                <div class="fw-bold"><i class="bi bi-person-circle me-1"></i> ${user.nickname}</div>
-                <button class="btn btn-sm btn-outline-light" id="logoutBtn"><i class="bi bi-box-arrow-right"></i> ออกจากระบบ</button>
-            </div>
-        </div>
-        
-        <div class="sidebar">
-            <div class="menu-label">เมนูหลัก</div>
-            <a href="#dashboard" class="nav-link" id="nav-dashboard"><i class="bi bi-speedometer2"></i> แดชบอร์ด</a>
-            <a href="#plans" class="nav-link" id="nav-plans"><i class="bi bi-list-task"></i> แผนงาน (เช้า)</a>
-            <a href="#summaries" class="nav-link" id="nav-summaries"><i class="bi bi-journal-check"></i> สรุปงาน (เย็น)</a>
-            <a href="#morningtalk" class="nav-link" id="nav-morningtalk"><i class="bi bi-chat-square-text"></i> Morning Talk</a>
-            
-            ${user.is_admin ? `
-            <div class="menu-label mt-4">ผู้ดูแลระบบ</div>
-            <a href="#projects" class="nav-link" id="nav-projects"><i class="bi bi-folder2"></i> โครงการ</a>
-            <a href="#members" class="nav-link" id="nav-members"><i class="bi bi-people"></i> สมาชิก</a>
-            ` : ''}
-        </div>
+        </nav>
 
-        <div class="main-content" id="page-content">
+        <div class="main-content container-fluid" id="page-content">
             <!-- Dynamic view goes here -->
         </div>
     `;

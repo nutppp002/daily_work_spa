@@ -52,73 +52,29 @@ body {
     font-size: .88rem;
 }
 
-/* Topbar for Dashboard */
-.topbar {
-    background: linear-gradient(135deg, #1a5dc8, #0d2e6b);
-    color: #fff;
-    height: 54px;
-    padding: 0 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, .25);
-}
-
-.topbar-brand {
-    font-size: 1.05rem;
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.sidebar {
-    width: 260px;
-    background: #fff;
-    border-right: 1px solid #e0e6ed;
-    height: calc(100vh - 54px);
-    position: fixed;
-    top: 54px;
-    left: 0;
-    overflow-y: auto;
-    padding-bottom: 20px;
-}
-
 .main-content {
-    margin-left: 260px;
-    margin-top: 54px;
-    min-height: calc(100vh - 54px);
+    min-height: calc(100vh - 60px);
     padding: 20px;
 }
 
-.menu-label {
-    font-size: .75rem;
-    font-weight: bold;
-    color: #8da1b5;
-    text-transform: uppercase;
-    letter-spacing: .5px;
-    margin: 15px 20px 5px;
-}
-
-.nav-link {
-    color: #3b4d61;
-    padding: 8px 20px;
+/* Custom styling for top navbar links if needed */
+.navbar-dark .nav-link {
+    color: rgba(255, 255, 255, 0.85);
     font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    transition: all .2s;
+    padding: 10px 15px;
+    border-radius: 6px;
+    margin: 0 4px;
+    transition: all 0.2s;
 }
 
-.nav-link:hover {
-    background: #f8fafe;
-    color: #1a73e8;
+.navbar-dark .nav-link:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.1);
 }
 
-.nav-link.active {
-    background: #e8f0fe;
-    color: #1a73e8;
-    border-right: 3px solid #1a73e8;
+.navbar-dark .nav-link.active {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.2);
     font-weight: bold;
 }
 
