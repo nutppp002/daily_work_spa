@@ -1,0 +1,130 @@
+:root {
+    --blue: #1a73e8;
+    --green: #00897b;
+    --purple: #7b1fa2;
+    --orange: #f57c00;
+}
+
+body {
+    background: #f1f5fb;
+    font-family: 'Sarabun', 'Segoe UI', sans-serif;
+    font-size: 15px;
+}
+
+/* Backgrounds for auth pages */
+.auth-bg {
+    background: linear-gradient(135deg, #1a5dc8, #0d2e6b) !important;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.auth-card {
+    width: 380px;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, .4);
+    background: white;
+}
+
+.setup-card {
+    width: 480px;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, .4);
+    background: white;
+}
+
+.auth-header {
+    background: linear-gradient(135deg, #1a73e8, #0d47a1);
+    padding: 32px 28px 24px;
+    text-align: center;
+    color: #fff;
+}
+
+.auth-body {
+    padding: 28px;
+}
+
+.form-label {
+    font-weight: 600;
+    font-size: .88rem;
+}
+
+/* Topbar for Dashboard */
+.topbar {
+    background: linear-gradient(135deg, #1a5dc8, #0d2e6b);
+    color: #fff;
+    height: 54px;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .25);
+}
+
+.topbar-brand {
+    font-size: 1.05rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sidebar {
+    width: 260px;
+    background: #fff;
+    border-right: 1px solid #e0e6ed;
+    height: calc(100vh - 54px);
+    position: fixed;
+    top: 54px;
+    left: 0;
+    overflow-y: auto;
+    padding-bottom: 20px;
+}
+
+.main-content {
+    margin-left: 260px;
+    margin-top: 54px;
+    min-height: calc(100vh - 54px);
+    padding: 20px;
+}
+
+.menu-label {
+    font-size: .75rem;
+    font-weight: bold;
+    color: #8da1b5;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    margin: 15px 20px 5px;
+}
+
+.nav-link {
+    color: #3b4d61;
+    padding: 8px 20px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all .2s;
+}
+
+.nav-link:hover {
+    background: #f8fafe;
+    color: #1a73e8;
+}
+
+.nav-link.active {
+    background: #e8f0fe;
+    color: #1a73e8;
+    border-right: 3px solid #1a73e8;
+    font-weight: bold;
+}
+
+.card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, .03);
+    margin-bottom: 20px;
+}
