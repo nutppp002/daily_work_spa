@@ -33,7 +33,7 @@ export async function renderSummariesView(container, user) {
 
     container.innerHTML = `
         <div class="row">
-            <div class="col-md-5">
+            <div class="col-md-6 col-lg-5 col-xl-5">
                 <div class="card p-0 mb-4 border-success" style="border-top: 4px solid ${themeColor};">
                     <div class="text-white p-2 fw-bold d-flex justify-content-between align-items-center" style="background-color: ${themeColor};">
                         <div><i class="bi bi-journal-check"></i> บันทึกสรุปงานเย็น</div>
@@ -45,28 +45,28 @@ export async function renderSummariesView(container, user) {
                             
                             <div class="mb-3">
                                 <label class="form-label small text-muted mb-1">วันที่</label>
-                                <input type="date" id="summaryDate" class="form-control form-control-sm" value="${today}" required>
+                                <input type="date" id="summaryDate" class="form-control" value="${today}" required>
                             </div>
                             
                             <div class="mb-3">
                                 <label class="form-label small text-muted mb-1">โครงการ</label>
-                                <select id="summaryProject" class="form-select form-select-sm" required>
+                                <select id="summaryProject" class="form-select" required>
                                     <option value="">-- เลือกโครงการ --</option>
                                 </select>
                             </div>
                             
                             <div class="mb-3">
                                 <label class="form-label small text-muted mb-1">สถานที่ปฏิบัติงาน (สำหรับส่งออก Text)</label>
-                                <input type="text" id="summaryLocation" class="form-control form-control-sm" placeholder="เช่น รพ.บ้านหลวง">
+                                <input type="text" id="summaryLocation" class="form-control" placeholder="เช่น รพ.บ้านหลวง">
                             </div>
                             
                             <div class="mb-4">
                                 <label class="form-label small text-muted mb-1">สมาชิก</label>
-                                <div class="input-group input-group-sm mb-1">
+                                <div class="input-group mb-1">
                                     <span class="input-group-text"><i class="bi bi-search"></i></span>
                                     <input type="text" id="memberSearch" class="form-control" placeholder="พิมพ์ชื่อเพื่อค้นหา...">
                                 </div>
-                                <select id="summaryMember" class="form-select form-select-sm" required>
+                                <select id="summaryMember" class="form-select" required>
                                     <option value="">-- เลือกสมาชิก --</option>
                                 </select>
                             </div>
@@ -76,10 +76,10 @@ export async function renderSummariesView(container, user) {
                             ${catBlocksHtml}
                             
                             <div class="d-flex gap-2 mt-4">
-                                <button type="button" class="btn btn-outline-secondary btn-sm flex-grow-1" id="clearSummaryBtn">
+                                <button type="button" class="btn btn-outline-secondary flex-grow-1" id="clearSummaryBtn">
                                     <i class="bi bi-file-earmark"></i> บันทึกฉบับร่าง
                                 </button>
-                                <button type="submit" class="btn btn-sm flex-grow-1 text-white" style="background-color: ${themeColor};" id="saveSummaryBtn">
+                                <button type="submit" class="btn flex-grow-1 text-white" style="background-color: ${themeColor};" id="saveSummaryBtn">
                                     [↓] บันทึกสรุปงาน
                                 </button>
                             </div>
@@ -88,7 +88,7 @@ export async function renderSummariesView(container, user) {
                 </div>
             </div>
             
-            <div class="col-md-7">
+            <div class="col-md-6 col-lg-7 col-xl-7">
                 <div class="card p-0" style="border-top: 4px solid ${themeColor};">
                     <div class="text-white p-2 d-flex justify-content-between align-items-center" style="background-color: ${themeColor};">
                         <div class="fw-bold"><i class="bi bi-journal-text"></i> สรุปงานเย็น</div>

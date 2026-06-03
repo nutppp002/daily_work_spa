@@ -30,7 +30,7 @@ export async function renderPlansView(container, user) {
     container.innerHTML = `
         <div class="row">
             <!-- Left Panel: Form -->
-            <div class="col-md-4">
+            <div class="col-md-6 col-lg-5 col-xl-5">
                 <div class="card p-0 mb-4 border-primary" style="border-top: 4px solid #0d6efd;">
                     <div class="bg-primary text-white p-2 fw-bold">
                         <i class="bi bi-person-workspace"></i> บันทึกแผนงานเช้า
@@ -41,19 +41,19 @@ export async function renderPlansView(container, user) {
                             
                             <div class="mb-3">
                                 <label class="form-label small text-muted mb-1">วันที่</label>
-                                <input type="date" id="planDate" class="form-control form-control-sm" value="${today}" required>
+                                <input type="date" id="planDate" class="form-control" value="${today}" required>
                             </div>
                             
                             <div class="mb-3">
                                 <label class="form-label small text-muted mb-1">โครงการ</label>
-                                <select id="planProject" class="form-select form-select-sm" required>
+                                <select id="planProject" class="form-select" required>
                                     <option value="">-- เลือกโครงการ --</option>
                                 </select>
                             </div>
                             
                             <div class="mb-4">
                                 <label class="form-label small text-muted mb-1">สมาชิก</label>
-                                <select id="planMember" class="form-select form-select-sm" required>
+                                <select id="planMember" class="form-select" required>
                                     <option value="">-- เลือกสมาชิก --</option>
                                 </select>
                             </div>
@@ -61,8 +61,8 @@ export async function renderPlansView(container, user) {
                             ${catBlocksHtml}
                             
                             <div class="d-flex gap-2 mt-4">
-                                <button type="button" class="btn btn-outline-secondary btn-sm flex-grow-1" id="clearPlanBtn">ล้างฟอร์ม</button>
-                                <button type="submit" class="btn btn-primary btn-sm flex-grow-1" id="savePlanBtn">
+                                <button type="button" class="btn btn-outline-secondary flex-grow-1" id="clearPlanBtn">ล้างฟอร์ม</button>
+                                <button type="submit" class="btn btn-primary flex-grow-1" id="savePlanBtn">
                                     [↓] บันทึกแผนงาน
                                 </button>
                             </div>
@@ -72,7 +72,7 @@ export async function renderPlansView(container, user) {
             </div>
             
             <!-- Right Panel: List -->
-            <div class="col-md-8">
+            <div class="col-md-6 col-lg-7 col-xl-7">
                 <div class="card p-0" style="border-top: 4px solid #0d6efd;">
                     <div class="bg-primary text-white p-2 d-flex justify-content-between align-items-center">
                         <div class="fw-bold"><i class="bi bi-list-task"></i> แผนงานเช้า</div>
