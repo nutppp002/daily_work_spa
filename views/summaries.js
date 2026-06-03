@@ -142,7 +142,14 @@ export async function renderSummariesView(container, user) {
         let text = `===================================\n`;
         text += `  สรุปงานประจำวัน — ${dateStr}\n`;
         text += `===================================\n`;
-        
+        text += `  สรุปงาน${item.mem.nickname}\n`;
+        text += `-----------------------------------\n`;
+        text += `  โครงการ           : ${item.proj.name}\n`;
+        text += `  สถานที่ปฏิบัติงาน : ${item.location || '-'}\n`;
+        text += `  ผู้ปฏิบัติงาน      : ${item.mem.line_name || item.mem.nickname}\n`;
+        text += `  วันที่ปฏิบัติงาน   : ${dateStr}\n`;
+        text += `-----------------------------------\n`;
+
         try {
             const mtData = await getMorningTalks(item.summary_date, item.summary_date);
             const mtForProj = mtData.filter(mt => mt.project_id === item.project_id);
@@ -158,19 +165,11 @@ export async function renderSummariesView(container, user) {
                     text += `  (Talk by: ${talkByName})\n`;
                     if (idx < mtForProj.length - 1) text += `\n`;
                 });
-                text += `===================================\n`;
+                text += `-----------------------------------\n`;
             }
         } catch (e) {
             console.error("Failed to fetch morning talk", e);
         }
-
-        text += `  สรุปงาน${item.mem.nickname}\n`;
-        text += `-----------------------------------\n`;
-        text += `  โครงการ           : ${item.proj.name}\n`;
-        text += `  สถานที่ปฏิบัติงาน : ${item.location || '-'}\n`;
-        text += `  ผู้ปฏิบัติงาน      : ${item.mem.line_name || item.mem.nickname}\n`;
-        text += `  วันที่ปฏิบัติงาน   : ${dateStr}\n`;
-        text += `-----------------------------------\n`;
 
         catConfig.forEach(cat => {
             const catItems = (item.items || []).filter(t => t.category === cat.name);
