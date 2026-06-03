@@ -28,10 +28,16 @@ export async function renderPlansView(container, user) {
     });
 
     container.innerHTML = `
-        <div class="row">
+        <style>
+            @media (max-width: 767.98px) {
+                #leftPanelPlans { width: 100% !important; }
+                #rightPanelPlans { padding-left: 0 !important; margin-top: 20px; width: 100% !important; flex: none !important; }
+            }
+        </style>
+        <div class="d-flex flex-column flex-md-row align-items-stretch" style="min-height: calc(100vh - 120px);">
             <!-- Left Panel: Form -->
-            <div class="col-md-6 col-lg-5 col-xl-5">
-                <div class="card p-0 mb-4 border-primary" style="border-top: 4px solid #0d6efd;">
+            <div id="leftPanelPlans" style="width: 45%; flex: 0 0 auto;">
+                <div class="card p-0 mb-4 border-primary h-100" style="border-top: 4px solid #0d6efd;">
                     <div class="bg-primary text-white p-2 fw-bold">
                         <i class="bi bi-person-workspace"></i> บันทึกแผนงานเช้า
                     </div>
@@ -71,20 +77,25 @@ export async function renderPlansView(container, user) {
                 </div>
             </div>
             
+            <!-- Resizer -->
+            <div id="resizerPlans" class="d-none d-md-flex align-items-center justify-content-center bg-light border-start border-end mx-2" style="width: 12px; cursor: col-resize; user-select: none; border-radius: 4px;">
+                <i class="bi bi-grip-vertical text-secondary"></i>
+            </div>
+            
             <!-- Right Panel: List -->
-            <div class="col-md-6 col-lg-7 col-xl-7">
-                <div class="card p-0" style="border-top: 4px solid #0d6efd;">
+            <div id="rightPanelPlans" style="flex: 1 1 0%; width: 0; min-width: 300px;">
+                <div class="card p-0 h-100" style="border-top: 4px solid #0d6efd;">
                     <div class="bg-primary text-white p-2 d-flex justify-content-between align-items-center">
                         <div class="fw-bold"><i class="bi bi-list-task"></i> แผนงานเช้า</div>
                         <div class="d-flex align-items-center gap-2">
-                            <span class="small">จาก</span>
+                            <span class="small d-none d-lg-inline">จาก</span>
                             <input type="date" id="filterStartDate" class="form-control form-control-sm w-auto" value="${today}">
-                            <span class="small">ถึง</span>
+                            <span class="small d-none d-lg-inline">ถึง</span>
                             <input type="date" id="filterEndDate" class="form-control form-control-sm w-auto" value="${today}">
                             <button class="btn btn-sm btn-light" id="btnSearch"><i class="bi bi-search"></i></button>
                         </div>
                     </div>
-                    <div class="p-4 bg-light min-vh-50" id="planListContainer">
+                    <div class="p-4 bg-light overflow-auto flex-grow-1" id="planListContainer">
                         <div class="text-center py-5 text-muted">
                             <i class="bi bi-inbox text-secondary" style="font-size: 3rem; opacity: 0.5;"></i>
                             <p class="mt-2">กำลังโหลด...</p>
@@ -315,6 +326,38 @@ export async function renderPlansView(container, user) {
     });
 
     document.getElementById('btnSearch').addEventListener('click', loadList);
+
+    // Resizer logic
+    const resizer = document.getElementById('resizerPlans');
+    const leftPanel = document.getElementById('leftPanelPlans');
+    
+    if (!window.appResizersAttached) {
+        window.appResizersAttached = true;
+        document.addEventListener('mousemove', (e) => {
+            if (window.currentResizerData) {
+                const { panel, containerRect } = window.currentResizerData;
+                let newWidth = e.clientX - containerRect.left;
+                if (newWidth < 300) newWidth = 300;
+                if (newWidth > containerRect.width - 300) newWidth = containerRect.width - 300;
+                panel.style.width = newWidth + 'px';
+                e.preventDefault();
+            }
+        });
+        document.addEventListener('mouseup', () => {
+            if (window.currentResizerData) {
+                window.currentResizerData = null;
+                document.body.style.cursor = 'default';
+            }
+        });
+    }
+
+    resizer.addEventListener('mousedown', (e) => {
+        window.currentResizerData = {
+            panel: leftPanel,
+            containerRect: leftPanel.parentElement.getBoundingClientRect()
+        };
+        document.body.style.cursor = 'col-resize';
+    });
 
     // Bootstrap init
     await loadDropdowns();
