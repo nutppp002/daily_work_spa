@@ -142,8 +142,6 @@ export async function renderSummariesView(container, user) {
         let text = `===================================\n`;
         text += `  สรุปงานประจำวัน — ${dateStr}\n`;
         text += `===================================\n`;
-        text += `  สรุปงาน${item.mem.nickname}\n`;
-        text += `-----------------------------------\n`;
         text += `  โครงการ           : ${item.proj.name}\n`;
         text += `  สถานที่ปฏิบัติงาน : ${item.location || '-'}\n`;
         text += `  ผู้ปฏิบัติงาน      : ${item.mem.line_name || item.mem.nickname}\n`;
