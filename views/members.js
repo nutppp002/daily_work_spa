@@ -12,6 +12,7 @@ export async function renderMembersView(container, user) {
         
         <div class="card p-3 mb-4">
             <form id="addMemberForm" class="row g-3 align-items-end">
+                <input type="hidden" id="mem_id" value="">
                 <div class="col-md-3">
                     <label class="form-label">ชื่อเล่น (Login ID)</label>
                     <input type="text" id="mem_nickname" class="form-control form-control-sm" required>
@@ -37,8 +38,9 @@ export async function renderMembersView(container, user) {
                         <option value="1">ใช่</option>
                     </select>
                 </div>
-                <div class="col-md-2">
-                    <button type="submit" class="btn btn-primary btn-sm w-100"><i class="bi bi-person-plus"></i> เพิ่มสมาชิก</button>
+                <div class="col-md-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary btn-sm flex-grow-1" id="saveMemBtn"><i class="bi bi-person-plus"></i> เพิ่มสมาชิก</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm d-none" id="cancelEditMemBtn">ยกเลิก</button>
                 </div>
             </form>
         </div>
@@ -114,6 +116,7 @@ export async function renderMembersView(container, user) {
                     <td>${projName}</td>
                     <td>${adminBadge}</td>
                     <td>
+                        <button class="btn btn-sm btn-outline-primary btn-edit me-1" data-id="${m.id}"><i class="bi bi-pencil"></i> แก้ไข</button>
                         <button class="btn btn-sm btn-outline-danger btn-delete" data-id="${m.id}"><i class="bi bi-trash"></i> ลบ</button>
                     </td>
                 </tr>
@@ -121,14 +124,33 @@ export async function renderMembersView(container, user) {
         });
         tbody.innerHTML = html;
 
-        // Attach delete events
+        tbody.querySelectorAll('.btn-edit').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const id = e.target.closest('button').dataset.id;
+                const m = membersData.find(x => x.id === id);
+                if (m) {
+                    document.getElementById('mem_id').value = m.id;
+                    document.getElementById('mem_nickname').value = m.nickname;
+                    document.getElementById('mem_fullname').value = m.line_name || '';
+                    document.getElementById('mem_project').value = m.project_id || '';
+                    document.getElementById('mem_color').value = m.color;
+                    document.getElementById('mem_admin').value = m.is_admin ? "1" : "0";
+                    
+                    document.getElementById('saveMemBtn').innerHTML = '<i class="bi bi-save"></i> บันทึก';
+                    document.getElementById('saveMemBtn').classList.remove('btn-primary');
+                    document.getElementById('saveMemBtn').classList.add('btn-success');
+                    document.getElementById('cancelEditMemBtn').classList.remove('d-none');
+                }
+            });
+        });
+
         tbody.querySelectorAll('.btn-delete').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 const id = e.target.closest('button').dataset.id;
                 if (confirm('คุณต้องการลบสมาชิกคนนี้ใช่หรือไม่?')) {
                     try {
                         await deleteMember(id);
-                        loadData(); // reload
+                        loadData();
                     } catch (err) {
                         alert('Error: ' + err.message);
                     }
@@ -137,23 +159,40 @@ export async function renderMembersView(container, user) {
         });
     }
 
+    document.getElementById('cancelEditMemBtn').addEventListener('click', () => {
+        document.getElementById('addMemberForm').reset();
+        document.getElementById('mem_id').value = '';
+        document.getElementById('mem_color').value = '#1a73e8';
+        document.getElementById('mem_admin').value = '0';
+        document.getElementById('saveMemBtn').innerHTML = '<i class="bi bi-person-plus"></i> เพิ่มสมาชิก';
+        document.getElementById('saveMemBtn').classList.remove('btn-success');
+        document.getElementById('saveMemBtn').classList.add('btn-primary');
+        document.getElementById('cancelEditMemBtn').classList.add('d-none');
+    });
+
     document.getElementById('addMemberForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const btn = e.target.querySelector('button');
+        const btn = document.getElementById('saveMemBtn');
         btn.disabled = true;
         
+        const id = document.getElementById('mem_id').value;
+        const data = {
+            nickname: document.getElementById('mem_nickname').value,
+            line_name: document.getElementById('mem_fullname').value,
+            project_id: document.getElementById('mem_project').value,
+            color: document.getElementById('mem_color').value,
+            is_admin: parseInt(document.getElementById('mem_admin').value) === 1,
+            active: 1
+        };
+        
         try {
-            await addMember({
-                nickname: document.getElementById('mem_nickname').value,
-                line_name: document.getElementById('mem_fullname').value,
-                project_id: document.getElementById('mem_project').value,
-                color: document.getElementById('mem_color').value,
-                is_admin: document.getElementById('mem_admin').value,
-                sort_order: membersData.length + 1,
-                active: 1
-            });
-            e.target.reset();
-            document.getElementById('mem_color').value = '#1a73e8';
+            if (id) {
+                await updateMember(id, data);
+            } else {
+                data.sort_order = membersData.length + 1;
+                await addMember(data);
+            }
+            document.getElementById('cancelEditMemBtn').click();
             await loadData();
         } catch (err) {
             alert('Error: ' + err.message);

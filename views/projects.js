@@ -11,6 +11,7 @@ export async function renderProjectsView(container, user) {
         
         <div class="card p-3 mb-4">
             <form id="addProjectForm" class="row g-3 align-items-end">
+                <input type="hidden" id="proj_id" value="">
                 <div class="col-md-3">
                     <label class="form-label">ชื่อโครงการ</label>
                     <input type="text" id="proj_name" class="form-control form-control-sm" required>
@@ -23,12 +24,13 @@ export async function renderProjectsView(container, user) {
                     <label class="form-label">สีประจำโครงการ</label>
                     <input type="color" id="proj_color" class="form-control form-control-color form-control-sm w-100" value="#1a73e8">
                 </div>
-                <div class="col-md-2">
+                <div class="col-md-1">
                     <label class="form-label">ลำดับ</label>
                     <input type="number" id="proj_sort" class="form-control form-control-sm" value="1">
                 </div>
-                <div class="col-md-2">
-                    <button type="submit" class="btn btn-primary btn-sm w-100"><i class="bi bi-plus-circle"></i> เพิ่มโครงการ</button>
+                <div class="col-md-3 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary btn-sm flex-grow-1" id="saveProjBtn"><i class="bi bi-plus-circle"></i> เพิ่มโครงการ</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm d-none" id="cancelEditProjBtn">ยกเลิก</button>
                 </div>
             </form>
         </div>
@@ -84,6 +86,7 @@ export async function renderProjectsView(container, user) {
                         <span class="badge ${p.active ? 'bg-success' : 'bg-secondary'}">${p.active ? 'เปิดใช้งาน' : 'ปิดใช้งาน'}</span>
                     </td>
                     <td>
+                        <button class="btn btn-sm btn-outline-primary btn-edit me-1" data-id="${p.id}"><i class="bi bi-pencil"></i> แก้ไข</button>
                         <button class="btn btn-sm btn-outline-danger btn-delete" data-id="${p.id}"><i class="bi bi-trash"></i> ลบ</button>
                     </td>
                 </tr>
@@ -91,7 +94,25 @@ export async function renderProjectsView(container, user) {
         });
         tbody.innerHTML = html;
 
-        // Attach delete events
+        tbody.querySelectorAll('.btn-edit').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const id = e.target.closest('button').dataset.id;
+                const p = projectsData.find(x => x.id === id);
+                if (p) {
+                    document.getElementById('proj_id').value = p.id;
+                    document.getElementById('proj_name').value = p.name;
+                    document.getElementById('proj_hospital').value = p.hospital;
+                    document.getElementById('proj_color').value = p.color;
+                    document.getElementById('proj_sort').value = p.sort_order;
+                    
+                    document.getElementById('saveProjBtn').innerHTML = '<i class="bi bi-save"></i> บันทึก';
+                    document.getElementById('saveProjBtn').classList.remove('btn-primary');
+                    document.getElementById('saveProjBtn').classList.add('btn-success');
+                    document.getElementById('cancelEditProjBtn').classList.remove('d-none');
+                }
+            });
+        });
+
         tbody.querySelectorAll('.btn-delete').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 const id = e.target.closest('button').dataset.id;
@@ -106,23 +127,39 @@ export async function renderProjectsView(container, user) {
             });
         });
     }
+    
+    document.getElementById('cancelEditProjBtn').addEventListener('click', () => {
+        document.getElementById('addProjectForm').reset();
+        document.getElementById('proj_id').value = '';
+        document.getElementById('proj_color').value = '#1a73e8';
+        document.getElementById('proj_sort').value = '1';
+        document.getElementById('saveProjBtn').innerHTML = '<i class="bi bi-plus-circle"></i> เพิ่มโครงการ';
+        document.getElementById('saveProjBtn').classList.remove('btn-success');
+        document.getElementById('saveProjBtn').classList.add('btn-primary');
+        document.getElementById('cancelEditProjBtn').classList.add('d-none');
+    });
 
     document.getElementById('addProjectForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const btn = e.target.querySelector('button');
+        const btn = document.getElementById('saveProjBtn');
         btn.disabled = true;
         
+        const id = document.getElementById('proj_id').value;
+        const data = {
+            name: document.getElementById('proj_name').value,
+            hospital: document.getElementById('proj_hospital').value,
+            color: document.getElementById('proj_color').value,
+            sort_order: document.getElementById('proj_sort').value,
+            active: 1
+        };
+        
         try {
-            await addProject({
-                name: document.getElementById('proj_name').value,
-                hospital: document.getElementById('proj_hospital').value,
-                color: document.getElementById('proj_color').value,
-                sort_order: document.getElementById('proj_sort').value,
-                active: 1
-            });
-            e.target.reset();
-            document.getElementById('proj_color').value = '#1a73e8';
-            document.getElementById('proj_sort').value = '1';
+            if (id) {
+                await updateProject(id, data);
+            } else {
+                await addProject(data);
+            }
+            document.getElementById('cancelEditProjBtn').click();
             await loadData();
         } catch (err) {
             alert('Error: ' + err.message);
