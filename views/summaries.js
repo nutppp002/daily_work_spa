@@ -2,6 +2,7 @@ import { getSummaries, saveSummary, deleteSummary, getSummary, aiExpandText } fr
 import { getPlan } from '../services/plans.js';
 import { getProjects } from '../services/projects.js';
 import { getMembers } from '../services/members.js';
+import { getMorningTalks } from '../services/morningtalk.js';
 
 export async function renderSummariesView(container, user) {
     const today = new Date().toISOString().split('T')[0];
@@ -132,11 +133,11 @@ export async function renderSummariesView(container, user) {
     let members = [];
     let allData = [];
 
-    function generateSummaryText(item) {
+    async function generateSummaryText(item) {
         const d = new Date(item.summary_date);
         const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         let dateStr = d.toLocaleDateString('th-TH', dateOptions);
-        dateStr = dateStr.replace('พ.ศ.', '').trim(); // Custom formatting adjustment
+        dateStr = dateStr.replace('พ.ศ.', '').trim(); 
         
         let text = `===================================\n`;
         text += `  สรุปงานประจำวัน — ${dateStr}\n`;
@@ -149,6 +150,27 @@ export async function renderSummariesView(container, user) {
         text += `  วันที่ปฏิบัติงาน   : ${dateStr}\n`;
         text += `-----------------------------------\n`;
 
+        try {
+            const mtData = await getMorningTalks(item.summary_date, item.summary_date);
+            const mtForProj = mtData.filter(mt => mt.project_id === item.project_id);
+            if (mtForProj.length > 0) {
+                text += `  🗣️ Morning Talk\n`;
+                mtForProj.forEach((mt, idx) => {
+                    const talkBy = members.find(m => m.id === mt.talk_by) || { nickname: 'Unknown', line_name: '' };
+                    const talkByName = talkBy.line_name || talkBy.nickname;
+                    const contentLines = mt.content.split('\n');
+                    contentLines.forEach(line => {
+                        text += `  ${line}\n`;
+                    });
+                    text += `  (Talk by: ${talkByName})\n`;
+                    if (idx < mtForProj.length - 1) text += `\n`;
+                });
+                text += `-----------------------------------\n`;
+            }
+        } catch (e) {
+            console.error("Failed to fetch morning talk", e);
+        }
+
         catConfig.forEach(cat => {
             const catItems = (item.items || []).filter(t => t.category === cat.name);
             if (catItems.length > 0) {
@@ -156,7 +178,7 @@ export async function renderSummariesView(container, user) {
                 catItems.forEach((t, i) => {
                     text += `  ${i + 1}. ${t.title}\n`;
                     if (t.detail) {
-                        const detailLines = t.detail.split('\\n');
+                        const detailLines = t.detail.split('\n');
                         detailLines.forEach(line => text += `     ${line}\n`);
                     }
                     text += `     สถานะ : ${t.status}\n`;
@@ -368,12 +390,24 @@ export async function renderSummariesView(container, user) {
 
             // Attach events
             listContainer.querySelectorAll('.btn-export').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const id = e.target.closest('button').dataset.id;
+                btn.addEventListener('click', async (e) => {
+                    const button = e.target.closest('button');
+                    const id = button.dataset.id;
                     const item = enrichedData.find(x => x.id === id);
                     if(item) {
-                        const text = generateSummaryText(item);
-                        downloadTextFile(`สรุปงาน_${item.mem.nickname}_${item.summary_date}.txt`, text);
+                        const originalHtml = button.innerHTML;
+                        button.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+                        button.disabled = true;
+                        
+                        try {
+                            const text = await generateSummaryText(item);
+                            downloadTextFile(`สรุปงาน_${item.mem.nickname}_${item.summary_date}.txt`, text);
+                        } catch (err) {
+                            alert('Error generating text: ' + err.message);
+                        } finally {
+                            button.innerHTML = originalHtml;
+                            button.disabled = false;
+                        }
                     }
                 });
             });
