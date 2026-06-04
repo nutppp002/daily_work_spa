@@ -104,7 +104,10 @@ export async function renderSummariesView(container, user) {
                 <div class="card p-0 h-100" style="border-top: 4px solid ${themeColor};">
                     <div class="text-white p-2 d-flex justify-content-between align-items-center" style="background-color: ${themeColor};">
                         <div class="fw-bold"><i class="bi bi-journal-text"></i> สรุปงานเย็น</div>
-                        <div class="d-flex align-items-center gap-2">
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <select id="filterProject" class="form-select form-select-sm w-auto">
+                                <option value="">-- ทุกโครงการ --</option>
+                            </select>
                             <span class="small d-none d-lg-inline">จาก</span>
                             <input type="date" id="filterStartDate" class="form-control form-control-sm w-auto" value="${today}">
                             <span class="small d-none d-lg-inline">ถึง</span>
@@ -271,8 +274,33 @@ export async function renderSummariesView(container, user) {
         members = await getMembers();
 
         let projOpts = '<option value="">-- เลือกโครงการ --</option>';
-        projects.forEach(p => projOpts += `<option value="${p.id}">${p.name}</option>`);
+        let filterProjOpts = '<option value="">-- ทุกโครงการ --</option>';
+        projects.forEach(p => {
+            projOpts += `<option value="${p.id}">${p.name}</option>`;
+            filterProjOpts += `<option value="${p.id}">${p.name}</option>`;
+        });
         projectSelect.innerHTML = projOpts;
+        const filterProjectSelect = document.getElementById('filterProject');
+        if (filterProjectSelect) filterProjectSelect.innerHTML = filterProjOpts;
+
+        // Default project from user
+        if (user && user.project_id) {
+            projectSelect.value = user.project_id;
+            const proj = projects.find(p => p.id === user.project_id);
+            if (proj && proj.hospital) {
+                document.getElementById('summaryLocation').value = proj.hospital;
+            }
+        }
+
+        projectSelect.addEventListener('change', (e) => {
+            const projId = e.target.value;
+            const proj = projects.find(p => p.id === projId);
+            if (proj && proj.hospital) {
+                document.getElementById('summaryLocation').value = proj.hospital;
+            } else {
+                document.getElementById('summaryLocation').value = '';
+            }
+        });
 
         function populateMembers(filter = '') {
             let memOpts = '<option value="">-- เลือกสมาชิก --</option>';
@@ -331,9 +359,14 @@ export async function renderSummariesView(container, user) {
             
         const start = document.getElementById('filterStartDate').value;
         const end = document.getElementById('filterEndDate').value;
+        const filterProjId = document.getElementById('filterProject').value;
         
         try {
             allData = await getSummaries(start, end);
+            
+            if (filterProjId) {
+                allData = allData.filter(item => item.project_id === filterProjId);
+            }
             
             if (allData.length === 0) {
                 listContainer.innerHTML = `
