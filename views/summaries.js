@@ -1,4 +1,4 @@
-import { getSummaries, saveSummary, deleteSummary, getSummary, aiExpandText } from '../services/summaries.js';
+import { getSummaries, saveSummary, deleteSummary, getSummary, aiExpandText, getMemberTaskTitles } from '../services/summaries.js';
 import { getPlan } from '../services/plans.js';
 import { getProjects } from '../services/projects.js';
 import { getMembers } from '../services/members.js';
@@ -14,7 +14,7 @@ export async function renderSummariesView(container, user) {
         { id: 'cat_urgent', name: 'งานเร่งด่วน (งานใหม่รับในวัน)', color: '#dc3545', icon: 'bi-lightning-charge', emoji: '⚡' },
         { id: 'cat_others', name: 'งานอื่น ๆ', color: '#6c757d', icon: 'bi-three-dots', emoji: '📝' }
     ];
-    const summaryStatuses = ['เสร็จสิ้น', 'รอดำเนินการต่อ', 'ติดปัญหา/ล่าช้า'];
+    const summaryStatuses = ['เสร็จสิ้น', 'กำลังดำเนินการ', 'รอดำเนินการต่อ', 'ติดปัญหา/ล่าช้า'];
 
     let catBlocksHtml = '';
     catConfig.forEach(cat => {
@@ -83,11 +83,16 @@ export async function renderSummariesView(container, user) {
                             ${catBlocksHtml}
                             
                             <div class="d-flex gap-2 mt-4">
-                                <button type="button" class="btn btn-outline-secondary flex-grow-1" id="clearSummaryBtn">
+                                <button type="button" class="btn btn-outline-secondary flex-grow-1" id="draftSummaryBtn">
                                     <i class="bi bi-file-earmark"></i> บันทึกฉบับร่าง
                                 </button>
                                 <button type="submit" class="btn flex-grow-1 text-white" style="background-color: ${themeColor};" id="saveSummaryBtn">
                                     [↓] บันทึกสรุปงาน
+                                </button>
+                            </div>
+                            <div class="mt-2 text-end">
+                                <button type="button" class="btn btn-sm btn-link text-muted text-decoration-none" id="clearSummaryBtn">
+                                    ล้างฟอร์ม
                                 </button>
                             </div>
                         </form>
@@ -124,6 +129,7 @@ export async function renderSummariesView(container, user) {
                 </div>
             </div>
         </div>
+        <datalist id="taskTitlesList"></datalist>
     `;
 
     const projectSelect = document.getElementById('summaryProject');
@@ -143,7 +149,7 @@ export async function renderSummariesView(container, user) {
         dateStr = dateStr.replace('พ.ศ.', '').trim(); 
         
         let text = `===================================\n`;
-        text += `  สรุปงานประจำวัน — ${dateStr}\n`;
+        text += `  สรุปงานประจำวัน — ${dateStr}${item.is_draft === 1 ? ' (ฉบับร่าง)' : ''}\n`;
         text += `===================================\n`;
         text += `  โครงการ           : ${item.proj.name}\n`;
         text += `  สถานที่ปฏิบัติงาน : ${item.location || '-'}\n`;
@@ -216,7 +222,7 @@ export async function renderSummariesView(container, user) {
             <button class="btn btn-sm btn-close position-absolute top-0 end-0 m-1 btn-remove-item" type="button" tabindex="-1"></button>
             <div class="row g-2 mb-2 pr-4">
                 <div class="col-8">
-                    <input type="text" class="form-control form-control-sm item-title fw-bold" placeholder="หัวข้องาน" value="${item.title}" required>
+                    <input type="text" class="form-control form-control-sm item-title fw-bold" placeholder="หัวข้องาน" value="${item.title}" list="taskTitlesList" required>
                 </div>
                 <div class="col-4">
                     <select class="form-select form-select-sm item-status">${statusOpts}</select>
@@ -318,7 +324,22 @@ export async function renderSummariesView(container, user) {
             }
         });
 
+        memberSelect.addEventListener('change', async (e) => {
+            const memId = e.target.value;
+            if (memId) {
+                const titles = await getMemberTaskTitles(memId);
+                const dl = document.getElementById('taskTitlesList');
+                if (dl) {
+                    dl.innerHTML = titles.map(t => `<option value="${t.replace(/"/g, '&quot;')}">`).join('');
+                }
+            } else {
+                const dl = document.getElementById('taskTitlesList');
+                if (dl) dl.innerHTML = '';
+            }
+        });
+
         memberSelect.value = user.id;
+        memberSelect.dispatchEvent(new Event('change'));
     }
 
     function renderItemsListHTML(items) {
@@ -331,6 +352,7 @@ export async function renderSummariesView(container, user) {
                 html += `<div class="mb-3"><span class="small fw-bold" style="color:${cat.color}">${cat.name}</span><div class="ps-2 mt-1 border-start border-2 border-secondary border-opacity-25">`;
                 catItems.forEach((t, i) => {
                     let statusColor = 'success';
+                    if (t.status === 'กำลังดำเนินการ') statusColor = 'primary';
                     if (t.status === 'รอดำเนินการต่อ') statusColor = 'warning text-dark';
                     if (t.status === 'ติดปัญหา/ล่าช้า') statusColor = 'danger';
 
@@ -399,6 +421,7 @@ export async function renderSummariesView(container, user) {
                                 <span class="badge bg-light text-dark ms-2 border"><i class="bi bi-folder2"></i> ${item.proj.name}</span>
                                 <span class="ms-2 small text-muted">${dateStr}</span>
                                 ${item.location ? `<span class="ms-2 small text-muted"><i class="bi bi-geo-alt"></i> ${item.location}</span>` : ''}
+                                ${item.is_draft === 1 ? `<span class="badge bg-warning text-dark ms-2"><i class="bi bi-file-earmark"></i> ฉบับร่าง</span>` : ''}
                             </div>
                             <div class="d-flex align-items-center">
                                 <button class="btn btn-sm btn-outline-success me-2 btn-export" data-id="${item.id}" title="ส่งออกเป็นไฟล์ Text"><i class="bi bi-file-text"></i> Export</button>
@@ -535,9 +558,18 @@ export async function renderSummariesView(container, user) {
         });
     });
 
+    document.getElementById('draftSummaryBtn').addEventListener('click', () => {
+        submitSummary(true);
+    });
+
     document.getElementById('summaryForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const btn = document.getElementById('saveSummaryBtn');
+        submitSummary(false);
+    });
+
+    async function submitSummary(isDraft) {
+        const btn = document.getElementById(isDraft ? 'draftSummaryBtn' : 'saveSummaryBtn');
+        const originalHtml = btn.innerHTML;
         btn.disabled = true;
         btn.innerHTML = 'กำลังบันทึก...';
 
@@ -560,6 +592,7 @@ export async function renderSummariesView(container, user) {
             member_id: document.getElementById('summaryMember').value,
             location: document.getElementById('summaryLocation').value.trim(),
             report_time: new Date().toLocaleTimeString('th-TH'),
+            is_draft: isDraft ? 1 : 0,
             items: items
         };
 
@@ -571,9 +604,9 @@ export async function renderSummariesView(container, user) {
             alert('Error: ' + err.message);
         } finally {
             btn.disabled = false;
-            btn.innerHTML = '[↓] บันทึกสรุปงาน';
+            btn.innerHTML = originalHtml;
         }
-    });
+    }
 
     document.getElementById('btnSearch').addEventListener('click', loadList);
 

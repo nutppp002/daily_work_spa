@@ -34,6 +34,7 @@ export async function login(username, password) {
         localStorage.setItem('daily_work_uid', user.id);
         localStorage.setItem('daily_work_nickname', user.nickname);
         localStorage.setItem('daily_work_is_admin', user.is_admin);
+        localStorage.setItem('daily_work_project_id', user.project_id || '');
         return user;
     }
     throw new Error('ไม่พบชื่อผู้ใช้นี้ในระบบ');
@@ -43,6 +44,7 @@ export function logout() {
     localStorage.removeItem('daily_work_uid');
     localStorage.removeItem('daily_work_nickname');
     localStorage.removeItem('daily_work_is_admin');
+    localStorage.removeItem('daily_work_project_id');
 }
 
 export function getCurrentUser() {
@@ -51,7 +53,8 @@ export function getCurrentUser() {
     return {
         id: uid,
         nickname: localStorage.getItem('daily_work_nickname'),
-        is_admin: parseInt(localStorage.getItem('daily_work_is_admin') || '0')
+        is_admin: parseInt(localStorage.getItem('daily_work_is_admin') || '0'),
+        project_id: localStorage.getItem('daily_work_project_id') || ''
     };
 }
 
@@ -89,4 +92,5 @@ export async function setupFirstAdmin(setupData) {
     localStorage.setItem('daily_work_uid', memberRef.id);
     localStorage.setItem('daily_work_nickname', nickname);
     localStorage.setItem('daily_work_is_admin', '1');
+    localStorage.setItem('daily_work_project_id', projRef.id);
 }

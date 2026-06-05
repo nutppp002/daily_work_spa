@@ -178,10 +178,11 @@ export async function renderMembersView(container, user) {
         const id = document.getElementById('mem_id').value;
         const data = {
             nickname: document.getElementById('mem_nickname').value,
+            username: document.getElementById('mem_nickname').value,
             line_name: document.getElementById('mem_fullname').value,
             project_id: document.getElementById('mem_project').value,
             color: document.getElementById('mem_color').value,
-            is_admin: parseInt(document.getElementById('mem_admin').value) === 1,
+            is_admin: parseInt(document.getElementById('mem_admin').value),
             active: 1
         };
         

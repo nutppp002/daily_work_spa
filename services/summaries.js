@@ -1,5 +1,5 @@
 import { db } from '../firebase-config.js';
-import { collection, doc, getDocs, addDoc, updateDoc, deleteDoc, query, where } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+import { collection, doc, getDoc, setDoc, getDocs, addDoc, updateDoc, deleteDoc, query, where, arrayUnion } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 
 const collName = "summaries";
 
@@ -30,25 +30,55 @@ export async function getSummary(memberId, date) {
 }
 
 export async function saveSummary(data, id = null) {
+    let returnId = id;
     if (id) {
         const ref = doc(db, collName, id);
         await updateDoc(ref, {
             ...data,
             updated_at: new Date().toISOString()
         });
-        return id;
     } else {
         const ref = await addDoc(collection(db, collName), {
             ...data,
             updated_at: new Date().toISOString()
         });
-        return ref.id;
+        returnId = ref.id;
     }
+
+    // Save history titles
+    if (data.member_id && data.items && data.items.length > 0) {
+        const titles = data.items.map(i => i.title.trim()).filter(t => t);
+        if (titles.length > 0) {
+            try {
+                const ref = doc(db, "member_task_titles", data.member_id);
+                await setDoc(ref, {
+                    titles: arrayUnion(...titles)
+                }, { merge: true });
+            } catch (e) {
+                console.error("Failed to save title history", e);
+            }
+        }
+    }
+
+    return returnId;
 }
 
 export async function deleteSummary(id) {
     const ref = doc(db, collName, id);
     await deleteDoc(ref);
+}
+
+export async function getMemberTaskTitles(memberId) {
+    if (!memberId) return [];
+    try {
+        const d = await getDoc(doc(db, "member_task_titles", memberId));
+        if (d.exists()) {
+            return d.data().titles || [];
+        }
+    } catch(e) {
+        console.error("Error fetching task titles:", e);
+    }
+    return [];
 }
 
 // Groq AI Integration
