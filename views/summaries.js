@@ -279,6 +279,11 @@ export async function renderSummariesView(container, user) {
         projects = await getProjects();
         members = await getMembers();
 
+        if (!user.is_admin) {
+            projects = projects.filter(p => p.id === user.project_id);
+            members = members.filter(m => m.project_id === user.project_id);
+        }
+
         let projOpts = '<option value="">-- เลือกโครงการ --</option>';
         let filterProjOpts = '<option value="">-- ทุกโครงการ --</option>';
         projects.forEach(p => {
@@ -385,6 +390,10 @@ export async function renderSummariesView(container, user) {
         
         try {
             allData = await getSummaries(start, end);
+            
+            if (!user.is_admin) {
+                allData = allData.filter(item => item.project_id === user.project_id);
+            }
             
             if (filterProjId) {
                 allData = allData.filter(item => item.project_id === filterProjId);

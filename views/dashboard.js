@@ -54,8 +54,18 @@ export async function renderDashboardView(container, user) {
             </div>`;
         
         try {
-            if(members.length === 0) members = await getMembers();
-            if(projects.length === 0) projects = await getProjects();
+            if(members.length === 0) {
+                members = await getMembers();
+                if (!user.is_admin) {
+                    members = members.filter(m => m.project_id === user.project_id);
+                }
+            }
+            if(projects.length === 0) {
+                projects = await getProjects();
+                if (!user.is_admin) {
+                    projects = projects.filter(p => p.id === user.project_id);
+                }
+            }
             
             plans = await getPlans(currentDate, currentDate);
             summaries = await getSummaries(currentDate, currentDate);
@@ -67,7 +77,7 @@ export async function renderDashboardView(container, user) {
     }
 
     function renderDashboard(filter = '') {
-        const filteredMembers = members.filter(m => m.active !== 0 && m.nickname.toLowerCase().includes(filter.toLowerCase()));
+        const filteredMembers = members.filter(m => m.active !== 0 && (m.nickname.toLowerCase().includes(filter.toLowerCase()) || (m.line_name || '').toLowerCase().includes(filter.toLowerCase())));
         
         let countMembers = members.filter(m => m.active !== 0).length;
         let countPlans = 0;
@@ -107,7 +117,7 @@ export async function renderDashboardView(container, user) {
                             <div class="d-flex align-items-start mb-2">
                                 <div class="rounded-circle flex-shrink-0" style="width: 40px; height: 40px; background-color: ${m.color};"></div>
                                 <div class="ms-3 flex-grow-1 min-w-0">
-                                    <div class="fw-bold fs-5 text-truncate" style="color: ${m.color};">${m.nickname}</div>
+                                    <div class="fw-bold fs-5 text-truncate" style="color: ${m.color};">${m.line_name || m.nickname}</div>
                                     <div class="small text-primary text-truncate"><i class="bi bi-folder2"></i> ${proj.name}</div>
                                     <div class="small text-muted text-truncate" style="font-size: 0.75rem;">${m.position || m.site_team || 'เจ้าหน้าที่'}</div>
                                 </div>
