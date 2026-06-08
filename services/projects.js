@@ -27,7 +27,9 @@ export async function addProject(data) {
         hospital: data.hospital || '',
         color: data.color || '#1a73e8',
         sort_order: parseInt(data.sort_order || '0'),
-        active: parseInt(data.active || '1')
+        active: parseInt(data.active || '1'),
+        line_token: data.line_token || '',
+        line_group_id: data.line_group_id || ''
     });
     return ref.id;
 }
@@ -39,7 +41,9 @@ export async function updateProject(id, data) {
         hospital: data.hospital || '',
         color: data.color || '#1a73e8',
         sort_order: parseInt(data.sort_order || '0'),
-        active: parseInt(data.active || '1')
+        active: parseInt(data.active || '1'),
+        line_token: data.line_token || '',
+        line_group_id: data.line_group_id || ''
     });
 }
 

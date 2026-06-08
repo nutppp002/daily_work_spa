@@ -609,6 +609,31 @@ export async function renderSummariesView(container, user) {
             await saveSummary(data, id ? id : null);
             document.getElementById('clearSummaryBtn').click(); 
             loadList();
+
+            // Send to LINE if not draft and project has token
+            if (!isDraft) {
+                const proj = projects.find(p => p.id === data.project_id) || { name: 'Unknown Project' };
+                if (proj.line_token && proj.line_group_id) {
+                    try {
+                        const mem = members.find(m => m.id === data.member_id) || { nickname: 'Unknown', line_name: '' };
+                        const itemForText = { ...data, proj, mem };
+                        const textToSend = await generateSummaryText(itemForText);
+                        
+                        fetch('api/line_bot.php', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                token: proj.line_token,
+                                to: proj.line_group_id,
+                                message: textToSend
+                            })
+                        }).catch(err => console.error("Line notify error:", err));
+                    } catch (lineErr) {
+                        console.error("Failed to prepare LINE message:", lineErr);
+                    }
+                }
+            }
+
         } catch (err) {
             alert('Error: ' + err.message);
         } finally {

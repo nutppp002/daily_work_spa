@@ -20,6 +20,14 @@ export async function renderProjectsView(container, user) {
                     <label class="form-label">โรงพยาบาล/สถานที่</label>
                     <input type="text" id="proj_hospital" class="form-control form-control-sm">
                 </div>
+                <div class="col-md-3">
+                    <label class="form-label">LINE Channel Token</label>
+                    <input type="text" id="proj_line_token" class="form-control form-control-sm" placeholder="เว้นว่างได้">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">LINE Group ID (หรือ User ID)</label>
+                    <input type="text" id="proj_line_group_id" class="form-control form-control-sm" placeholder="เว้นว่างได้">
+                </div>
                 <div class="col-md-2">
                     <label class="form-label">สีประจำโครงการ</label>
                     <input type="color" id="proj_color" class="form-control form-control-color form-control-sm w-100" value="#1a73e8">
@@ -102,6 +110,8 @@ export async function renderProjectsView(container, user) {
                     document.getElementById('proj_id').value = p.id;
                     document.getElementById('proj_name').value = p.name;
                     document.getElementById('proj_hospital').value = p.hospital;
+                    document.getElementById('proj_line_token').value = p.line_token || '';
+                    document.getElementById('proj_line_group_id').value = p.line_group_id || '';
                     document.getElementById('proj_color').value = p.color;
                     document.getElementById('proj_sort').value = p.sort_order;
                     
@@ -131,6 +141,8 @@ export async function renderProjectsView(container, user) {
     document.getElementById('cancelEditProjBtn').addEventListener('click', () => {
         document.getElementById('addProjectForm').reset();
         document.getElementById('proj_id').value = '';
+        document.getElementById('proj_line_token').value = '';
+        document.getElementById('proj_line_group_id').value = '';
         document.getElementById('proj_color').value = '#1a73e8';
         document.getElementById('proj_sort').value = '1';
         document.getElementById('saveProjBtn').innerHTML = '<i class="bi bi-plus-circle"></i> เพิ่มโครงการ';
@@ -150,6 +162,8 @@ export async function renderProjectsView(container, user) {
             hospital: document.getElementById('proj_hospital').value,
             color: document.getElementById('proj_color').value,
             sort_order: document.getElementById('proj_sort').value,
+            line_token: document.getElementById('proj_line_token').value,
+            line_group_id: document.getElementById('proj_line_group_id').value,
             active: 1
         };
         
