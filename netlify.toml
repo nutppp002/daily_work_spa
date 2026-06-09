@@ -1,0 +1,9 @@
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+[[redirects]]
+  from = "/api/line_bot.php"
+  to = "/.netlify/functions/line-bot"
+  status = 200
+  force = true

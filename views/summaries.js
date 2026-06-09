@@ -280,8 +280,8 @@ export async function renderSummariesView(container, user) {
         members = await getMembers();
 
         if (!user.is_admin) {
-            projects = projects.filter(p => p.id === user.project_id);
-            members = members.filter(m => m.project_id === user.project_id);
+            projects = projects.filter(p => String(p.id) === String(user.project_id));
+            members = members.filter(m => String(m.project_id) === String(user.project_id));
         }
 
         let projOpts = '<option value="">-- เลือกโครงการ --</option>';
@@ -612,14 +612,19 @@ export async function renderSummariesView(container, user) {
 
             // Send to LINE if not draft and project has token
             if (!isDraft) {
-                const proj = projects.find(p => p.id === data.project_id) || { name: 'Unknown Project' };
+                const proj = projects.find(p => String(p.id) === String(data.project_id)) || { name: 'Unknown Project' };
+                console.log('[LINE Debug] Project:', proj.name, '| line_token:', proj.line_token ? '✓ มี' : '✗ ไม่มี', '| line_group_id:', proj.line_group_id ? '✓ มี' : '✗ ไม่มี');
                 if (proj.line_token && proj.line_group_id) {
                     try {
                         const mem = members.find(m => m.id === data.member_id) || { nickname: 'Unknown', line_name: '' };
                         const itemForText = { ...data, proj, mem };
                         const textToSend = await generateSummaryText(itemForText);
                         
-                        fetch('api/line_bot.php', {
+                        // Use absolute path - netlify.toml redirects /api/line_bot.php to serverless function
+                        const apiUrl = '/api/line_bot.php';
+                        console.log('[LINE Debug] Sending to API:', apiUrl);
+
+                        const lineResponse = await fetch(apiUrl, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
@@ -627,10 +632,23 @@ export async function renderSummariesView(container, user) {
                                 to: proj.line_group_id,
                                 message: textToSend
                             })
-                        }).catch(err => console.error("Line notify error:", err));
+                        });
+
+                        const lineResult = await lineResponse.text();
+                        console.log('[LINE Debug] Response status:', lineResponse.status, '| Body:', lineResult);
+
+                        if (!lineResponse.ok) {
+                            console.error('LINE API Error:', lineResponse.status, lineResult);
+                            alert('⚠️ บันทึกสรุปงานสำเร็จ แต่ส่ง LINE ไม่สำเร็จ\n\nError: ' + lineResult);
+                        } else {
+                            console.log('[LINE Debug] ✓ ส่ง LINE สำเร็จ');
+                        }
                     } catch (lineErr) {
-                        console.error("Failed to prepare LINE message:", lineErr);
+                        console.error("Failed to send LINE message:", lineErr);
+                        alert('⚠️ บันทึกสรุปงานสำเร็จ แต่ส่ง LINE ไม่สำเร็จ\n\nError: ' + lineErr.message);
                     }
+                } else {
+                    console.warn('[LINE Debug] ⚠️ โครงการนี้ยังไม่ได้ตั้งค่า LINE Token หรือ Group ID');
                 }
             }
 
