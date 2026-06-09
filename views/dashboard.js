@@ -8,8 +8,11 @@ export async function renderDashboardView(container, user) {
 
     container.innerHTML = `
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 pb-2 border-bottom">
-            <div class="d-flex align-items-center gap-3 mb-2 mb-md-0">
+            <div class="d-flex align-items-center gap-3 mb-2 mb-md-0 flex-wrap">
                 <h4 class="mb-0 text-primary"><i class="bi bi-layout-text-window-reverse"></i> ภาพรวมประจำวัน</h4>
+                <select id="dashProjectFilter" class="form-select form-select-sm" style="width: 180px;">
+                    <option value="">-- ทุกโครงการ --</option>
+                </select>
                 <div class="input-group input-group-sm" style="width: 200px;">
                     <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
                     <input type="text" id="dashSearch" class="form-control border-start-0" placeholder="ค้นหาชื่อสมาชิก...">
@@ -37,6 +40,7 @@ export async function renderDashboardView(container, user) {
 
     const dateInput = document.getElementById('dashDate');
     const searchInput = document.getElementById('dashSearch');
+    const projectFilter = document.getElementById('dashProjectFilter');
     const statsContainer = document.getElementById('statsContainer');
     const cardsContainer = document.getElementById('cardsContainer');
     
@@ -65,6 +69,12 @@ export async function renderDashboardView(container, user) {
                 if (!user.is_admin) {
                     projects = projects.filter(p => p.id === user.project_id);
                 }
+                // Populate project filter dropdown
+                let projOpts = '<option value="">-- ทุกโครงการ --</option>';
+                projects.forEach(p => {
+                    projOpts += `<option value="${p.id}">${p.name}</option>`;
+                });
+                projectFilter.innerHTML = projOpts;
             }
             
             plans = await getPlans(currentDate, currentDate);
@@ -77,9 +87,16 @@ export async function renderDashboardView(container, user) {
     }
 
     function renderDashboard(filter = '') {
-        const filteredMembers = members.filter(m => m.active !== 0 && (m.nickname.toLowerCase().includes(filter.toLowerCase()) || (m.line_name || '').toLowerCase().includes(filter.toLowerCase())));
+        const selectedProject = projectFilter.value;
         
-        let countMembers = members.filter(m => m.active !== 0).length;
+        // Filter members by project first, then by search text
+        let baseMembers = members.filter(m => m.active !== 0);
+        if (selectedProject) {
+            baseMembers = baseMembers.filter(m => m.project_id === selectedProject);
+        }
+        const filteredMembers = baseMembers.filter(m => m.nickname.toLowerCase().includes(filter.toLowerCase()) || (m.line_name || '').toLowerCase().includes(filter.toLowerCase()));
+        
+        let countMembers = baseMembers.length;
         let countPlans = 0;
         let countSummaries = 0;
 
@@ -185,6 +202,10 @@ export async function renderDashboardView(container, user) {
 
     searchInput.addEventListener('input', (e) => {
         renderDashboard(e.target.value);
+    });
+
+    projectFilter.addEventListener('change', () => {
+        renderDashboard(searchInput.value);
     });
 
     dateInput.addEventListener('change', (e) => {
