@@ -297,10 +297,6 @@ export async function renderPlansView(container, user) {
         let text = `===================================\n`;
         text += `  แผนงานเช้า — ${dateStr}\n`;
         text += `===================================\n`;
-        text += `  โครงการ        : ${itemForText.proj.name}\n`;
-        text += `  ชื่อ - นามสกุล : ${itemForText.mem.line_name || itemForText.mem.nickname}\n`;
-        text += `  วันที่           : ${dateStr}\n`;
-        text += `-----------------------------------\n`;
         
         catConfig.forEach(cat => {
             const catTasks = (itemForText.tasks || []).filter(t => t.category === cat.name);
