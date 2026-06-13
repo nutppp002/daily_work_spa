@@ -1,10 +1,10 @@
-import { checkHasMembers, login, logout, getCurrentUser, setupFirstAdmin } from './services/auth.js';
-import { renderProjectsView } from './views/projects.js';
-import { renderMembersView } from './views/members.js';
-import { renderPlansView } from './views/plans.js';
-import { renderSummariesView } from './views/summaries.js';
-import { renderMorningTalkView } from './views/morningtalk.js';
-import { renderDashboardView } from './views/dashboard.js';
+import { checkHasMembers, login, logout, getCurrentUser, setupFirstAdmin } from './services/auth.js?v=1.1';
+import { renderProjectsView } from './views/projects.js?v=1.1';
+import { renderMembersView } from './views/members.js?v=1.1';
+import { renderPlansView } from './views/plans.js?v=1.1';
+import { renderSummariesView } from './views/summaries.js?v=1.1';
+import { renderMorningTalkView } from './views/morningtalk.js?v=1.1';
+import { renderDashboardView } from './views/dashboard.js?v=1.1';
 const appDiv = document.getElementById('app');
 
 async function renderApp() {
