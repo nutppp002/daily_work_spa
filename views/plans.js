@@ -288,6 +288,37 @@ export async function renderPlansView(container, user) {
         });
     });
 
+    async function generatePlanText(itemForText) {
+        const d = new Date(itemForText.plan_date);
+        const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        let dateStr = d.toLocaleDateString('th-TH', dateOptions);
+        dateStr = dateStr.replace('พ.ศ.', '').trim();
+        
+        let text = `===================================\n`;
+        text += `  แผนงานเช้า — ${dateStr}\n`;
+        text += `===================================\n`;
+        text += `  โครงการ        : ${itemForText.proj.name}\n`;
+        text += `  ชื่อ - นามสกุล : ${itemForText.mem.line_name || itemForText.mem.nickname}\n`;
+        text += `  วันที่           : ${dateStr}\n`;
+        text += `-----------------------------------\n`;
+        
+        catConfig.forEach(cat => {
+            const catTasks = (itemForText.tasks || []).filter(t => t.category === cat.name);
+            if (catTasks.length > 0) {
+                text += `  ${cat.name}\n`;
+                catTasks.forEach((t, idx) => {
+                    text += `  ${idx + 1}. ${t.text}\n`;
+                });
+            }
+        });
+        
+        text += `-----------------------------------\n`;
+        text += `  ${itemForText.mem.line_name || itemForText.mem.nickname} รายงาน\n`;
+        text += `===================================\n`;
+
+        return text;
+    }
+
     document.getElementById('planForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const btn = document.getElementById('savePlanBtn');
@@ -317,6 +348,49 @@ export async function renderPlansView(container, user) {
             await savePlan(data, id ? id : null);
             document.getElementById('clearPlanBtn').click(); // reset form
             loadList();
+
+            // Send to LINE
+            const proj = projects.find(p => String(p.id) === String(data.project_id)) || { name: 'Unknown Project' };
+            console.log('[LINE Debug Plans] Project:', proj.name, '| line_token:', proj.line_token ? '✓ มี' : '✗ ไม่มี', '| line_group_id:', proj.line_group_id ? '✓ มี' : '✗ ไม่มี');
+            if (proj.line_token && proj.line_group_id) {
+                try {
+                    const mem = members.find(m => m.id === data.member_id) || { nickname: 'Unknown', line_name: '' };
+                    const itemForText = { ...data, proj, mem };
+                    const textToSend = await generatePlanText(itemForText);
+                    
+                    const apiUrl = window.location.pathname.includes('/daily_work_spa') 
+                                    ? '/daily_work_spa/api/line_bot.php' 
+                                    : '/api/line_bot.php';
+                    
+                    console.log('[LINE Debug Plans] Sending to API:', apiUrl);
+
+                    const lineResponse = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            token: proj.line_token,
+                            to: proj.line_group_id,
+                            message: textToSend
+                        })
+                    });
+
+                    const lineResult = await lineResponse.text();
+                    console.log('[LINE Debug Plans] Response status:', lineResponse.status, '| Body:', lineResult);
+
+                    if (!lineResponse.ok) {
+                        console.error('LINE API Error:', lineResponse.status, lineResult);
+                        alert('⚠️ บันทึกแผนงานสำเร็จ แต่ส่ง LINE ไม่สำเร็จ\n\nError: ' + lineResult);
+                    } else {
+                        console.log('[LINE Debug Plans] ✓ ส่ง LINE สำเร็จ');
+                    }
+                } catch (lineErr) {
+                    console.error("Failed to send LINE message:", lineErr);
+                    alert('⚠️ บันทึกแผนงานสำเร็จ แต่ส่ง LINE ไม่สำเร็จ\n\nError: ' + lineErr.message);
+                }
+            } else {
+                console.warn('[LINE Debug Plans] ⚠️ โครงการนี้ยังไม่ได้ตั้งค่า LINE Token หรือ Group ID');
+            }
+
         } catch (err) {
             alert('Error: ' + err.message);
         } finally {
