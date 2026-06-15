@@ -5,6 +5,7 @@ import { renderPlansView } from './views/plans.js?v=1.1';
 import { renderSummariesView } from './views/summaries.js?v=1.1';
 import { renderMorningTalkView } from './views/morningtalk.js?v=1.1';
 import { renderDashboardView } from './views/dashboard.js?v=1.1';
+import { renderSettingsView } from './views/settings.js?v=1.1';
 const appDiv = document.getElementById('app');
 
 async function renderApp() {
@@ -204,6 +205,8 @@ function renderDashboard(user) {
                             <ul class="dropdown-menu shadow border-0 mt-2">
                                 <li><a class="dropdown-item text-dark" href="#projects" id="nav-projects"><i class="bi bi-folder2 text-secondary"></i> โครงการ</a></li>
                                 <li><a class="dropdown-item text-dark" href="#members" id="nav-members"><i class="bi bi-people text-secondary"></i> สมาชิก</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-dark" href="#settings" id="nav-settings"><i class="bi bi-gear text-secondary"></i> ตั้งค่าแจ้งเตือน Line</a></li>
                             </ul>
                         </li>
                         ` : ''}
@@ -252,6 +255,9 @@ function renderDashboard(user) {
                 break;
             case '#morningtalk':
                 renderMorningTalkView(pageContent, user);
+                break;
+            case '#settings':
+                if (user.is_admin) renderSettingsView(pageContent, user);
                 break;
             case '#dashboard':
             default:
