@@ -18,8 +18,5 @@ export async function getSettings() {
 
 export async function saveSettings(data) {
     const ref = doc(db, "settings", settingsDocId);
-    await setDoc(ref, {
-        morning_notify_time: data.morning_notify_time || '',
-        morning_notify_message: data.morning_notify_message || ''
-    }, { merge: true });
+    await setDoc(ref, data, { merge: true });
 }

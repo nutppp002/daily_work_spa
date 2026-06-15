@@ -6,6 +6,7 @@ import { renderSummariesView } from './views/summaries.js?v=1.1';
 import { renderMorningTalkView } from './views/morningtalk.js?v=1.1';
 import { renderDashboardView } from './views/dashboard.js?v=1.1';
 import { renderSettingsView } from './views/settings.js?v=1.1';
+import { startCronJobs } from './services/cron.js?v=1.1';
 const appDiv = document.getElementById('app');
 
 async function renderApp() {
@@ -27,6 +28,9 @@ async function renderApp() {
             renderLogin();
             return;
         }
+
+        // Start background tasks
+        startCronJobs();
 
         renderDashboard(user);
     } catch (error) {
