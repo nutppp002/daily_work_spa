@@ -610,47 +610,26 @@ export async function renderSummariesView(container, user) {
             document.getElementById('clearSummaryBtn').click(); 
             loadList();
 
-            // Send to LINE if not draft and project has token
+            // Send to LINE (Share Scheme)
             if (!isDraft) {
                 const proj = projects.find(p => String(p.id) === String(data.project_id)) || { name: 'Unknown Project' };
-                console.log('[LINE Debug] Project:', proj.name, '| line_token:', proj.line_token ? '✓ มี' : '✗ ไม่มี', '| line_group_id:', proj.line_group_id ? '✓ มี' : '✗ ไม่มี');
-                if (proj.line_token && proj.line_group_id) {
-                    try {
-                        const mem = members.find(m => m.id === data.member_id) || { nickname: 'Unknown', line_name: '' };
-                        const itemForText = { ...data, proj, mem };
-                        const textToSend = await generateSummaryText(itemForText);
-                        
-                        // Use absolute path - netlify.toml redirects /api/line_bot.php to serverless function
-                        const apiUrl = '/api/line_bot.php';
-                        console.log('[LINE Debug] Sending to API:', apiUrl);
-
-                        const lineResponse = await fetch(apiUrl, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                token: proj.line_token,
-                                to: proj.line_group_id,
-                                message: textToSend
-                            })
-                        });
-
-                        const lineResult = await lineResponse.text();
-                        console.log('[LINE Debug] Response status:', lineResponse.status, '| Body:', lineResult);
-
-                        if (!lineResponse.ok) {
-                            console.error('LINE API Error:', lineResponse.status, lineResult);
-                            alert('⚠️ บันทึกสรุปงานสำเร็จ แต่ส่ง LINE ไม่สำเร็จ\n\nError: ' + lineResult);
-                        } else {
-                            console.log('[LINE Debug] ✓ ส่ง LINE สำเร็จ');
+                setTimeout(async () => {
+                    if (confirm('บันทึกข้อมูลสรุปงานสำเร็จ! คุณต้องการเปิดแอป LINE เพื่อแชร์สรุปงานนี้เข้ากลุ่มหรือไม่?')) {
+                        try {
+                            const mem = members.find(m => m.id === data.member_id) || { nickname: 'Unknown', line_name: '' };
+                            const itemForText = { ...data, proj, mem };
+                            const textToSend = await generateSummaryText(itemForText);
+                            
+                            const lineUrl = 'https://line.me/R/msg/text/?' + encodeURIComponent(textToSend);
+                            window.open(lineUrl, '_blank');
+                        } catch (lineErr) {
+                            console.error("Failed to generate LINE message:", lineErr);
+                            alert('เกิดข้อผิดพลาดในการสร้างข้อความสำหรับแชร์ไปยัง LINE');
                         }
-                    } catch (lineErr) {
-                        console.error("Failed to send LINE message:", lineErr);
-                        alert('⚠️ บันทึกสรุปงานสำเร็จ แต่ส่ง LINE ไม่สำเร็จ\n\nError: ' + lineErr.message);
                     }
-                } else {
-                    console.warn('[LINE Debug] ⚠️ โครงการนี้ยังไม่ได้ตั้งค่า LINE Token หรือ Group ID');
-                }
+                }, 100);
             }
+
 
         } catch (err) {
             alert('Error: ' + err.message);
