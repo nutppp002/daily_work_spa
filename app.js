@@ -1,12 +1,12 @@
-import { checkHasMembers, login, logout, getCurrentUser, setupFirstAdmin } from './services/auth.js?v=1.3';
-import { renderProjectsView } from './views/projects.js?v=1.3';
-import { renderMembersView } from './views/members.js?v=1.3';
-import { renderPlansView } from './views/plans.js?v=1.3';
-import { renderSummariesView } from './views/summaries.js?v=1.3';
-import { renderMorningTalkView } from './views/morningtalk.js?v=1.3';
-import { renderDashboardView } from './views/dashboard.js?v=1.3';
-import { renderSettingsView } from './views/settings.js?v=1.3';
-import { startCronJobs } from './services/cron.js?v=1.3';
+import { checkHasMembers, login, logout, getCurrentUser, setupFirstAdmin } from './services/auth.js?v=1.4';
+import { renderProjectsView } from './views/projects.js?v=1.4';
+import { renderMembersView } from './views/members.js?v=1.4';
+import { renderPlansView } from './views/plans.js?v=1.4';
+import { renderSummariesView } from './views/summaries.js?v=1.4';
+import { renderMorningTalkView } from './views/morningtalk.js?v=1.4';
+import { renderDashboardView } from './views/dashboard.js?v=1.4';
+import { renderSettingsView } from './views/settings.js?v=1.4';
+import { startCronJobs } from './services/cron.js?v=1.4';
 const appDiv = document.getElementById('app');
 
 async function renderApp() {
