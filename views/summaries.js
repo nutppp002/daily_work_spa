@@ -620,12 +620,19 @@ export async function renderSummariesView(container, user) {
                             const itemForText = { ...data, proj, mem };
                             const textToSend = await generateSummaryText(itemForText);
                             
-                            const lineUrl = 'line://share?text=' + encodeURIComponent(textToSend);
-                            const a = document.createElement('a');
-                            a.href = lineUrl;
-                            document.body.appendChild(a);
-                            a.click();
-                            document.body.removeChild(a);
+                            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                            if (isMobile) {
+                                const lineUrl = 'line://share?text=' + encodeURIComponent(textToSend);
+                                window.location.href = lineUrl;
+                            } else {
+                                // PC Workaround due to LINE Desktop bugs and QR code blocking
+                                navigator.clipboard.writeText(textToSend).then(() => {
+                                    alert('เนื่องจากข้อจำกัดของ LINE บนคอมพิวเตอร์ ระบบได้ "คัดลอกข้อความ" ไว้ให้แล้ว\nกรุณากด "วาง" (Ctrl+V) ในแชทได้เลยครับ!');
+                                    window.location.href = 'line://';
+                                }).catch(() => {
+                                    alert('คัดลอกข้อความไม่สำเร็จ กรุณากดคัดลอกเอง');
+                                });
+                            }
                         } catch (lineErr) {
                             console.error("Failed to generate LINE message:", lineErr);
                             alert('เกิดข้อผิดพลาดในการสร้างข้อความสำหรับแชร์ไปยัง LINE');
