@@ -86,3 +86,46 @@ async function checkMorningNotify() {
         console.error("[CRON] Main Error:", error);
     }
 }
+
+export async function testNotification(message) {
+    try {
+        const projects = await getProjects();
+        const activeProjects = projects.filter(p => p.active == 1 && p.line_token && p.line_group_id);
+        
+        if (activeProjects.length === 0) {
+            alert('ไม่พบโครงการที่เปิดใช้งาน หรือยังไม่ได้ตั้งค่า LINE Token/Group ID ในเมนูจัดการโครงการ');
+            return;
+        }
+
+        let successCount = 0;
+        for (const proj of activeProjects) {
+            try {
+                const apiUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+                                ? '/daily_work_spa/api/line_bot.php' 
+                                : '/api/line_bot.php';
+
+                const res = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        token: proj.line_token,
+                        to: proj.line_group_id,
+                        message: message || "ทดสอบระบบแจ้งเตือนอัตโนมัติ"
+                    })
+                });
+                if(res.ok) successCount++;
+            } catch (e) {
+                console.error(`[TEST] Error sending for project ${proj.name}:`, e);
+            }
+        }
+        
+        if(successCount > 0) {
+            alert(`ทดสอบส่งข้อความสำเร็จ ${successCount} โครงการ! กรุณาเช็คในกลุ่ม LINE ครับ`);
+        } else {
+            alert('ส่งข้อความล้มเหลว กรุณาเช็ค Console (F12) สำหรับรายละเอียด Error');
+        }
+    } catch (error) {
+        console.error("[TEST] Main Error:", error);
+        alert('เกิดข้อผิดพลาด: ' + error.message);
+    }
+}
