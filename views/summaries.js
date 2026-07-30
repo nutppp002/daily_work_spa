@@ -178,17 +178,19 @@ export async function renderSummariesView(container, user) {
             console.error("Failed to fetch morning talk", e);
         }
 
+        let globalTaskCounter = 1;
         catConfig.forEach(cat => {
             const catItems = (item.items || []).filter(t => t.category === cat.name);
             if (catItems.length > 0) {
                 text += `  ${cat.emoji} ${cat.name}\n`;
-                catItems.forEach((t, i) => {
-                    text += `  ${i + 1}. ${t.title}\n`;
+                catItems.forEach((t) => {
+                    text += `  ${globalTaskCounter}. ${t.title}\n`;
                     if (t.detail) {
                         const detailLines = t.detail.split('\n');
                         detailLines.forEach(line => text += `     ${line}\n`);
                     }
                     text += `     สถานะ : ${t.status}\n`;
+                    globalTaskCounter++;
                 });
             }
         });
@@ -351,11 +353,12 @@ export async function renderSummariesView(container, user) {
         if (!items || items.length === 0) return '<p class="small text-muted mb-0">ไม่มีรายการงาน</p>';
         
         let html = '';
+        let globalHtmlCounter = 1;
         catConfig.forEach(cat => {
             const catItems = items.filter(t => t.category === cat.name);
             if (catItems.length > 0) {
                 html += `<div class="mb-3"><span class="small fw-bold" style="color:${cat.color}">${cat.name}</span><div class="ps-2 mt-1 border-start border-2 border-secondary border-opacity-25">`;
-                catItems.forEach((t, i) => {
+                catItems.forEach((t) => {
                     let statusColor = 'success';
                     if (t.status === 'กำลังดำเนินการ') statusColor = 'primary';
                     if (t.status === 'รอดำเนินการต่อ') statusColor = 'warning text-dark';
@@ -364,12 +367,13 @@ export async function renderSummariesView(container, user) {
                     html += `
                         <div class="mb-2">
                             <div class="fw-bold small text-dark">
-                                ${i+1}. ${t.title} 
+                                ${globalHtmlCounter}. ${t.title} 
                                 <span class="badge bg-${statusColor} ms-1" style="font-size:0.65rem;">${t.status}</span>
                             </div>
                             <div class="small text-muted" style="white-space: pre-wrap; margin-left: 14px;">${t.detail || '-'}</div>
                         </div>
                     `;
+                    globalHtmlCounter++;
                 });
                 html += `</div></div>`;
             }
@@ -614,18 +618,30 @@ export async function renderSummariesView(container, user) {
             if (!isDraft) {
                 const proj = projects.find(p => String(p.id) === String(data.project_id)) || { name: 'Unknown Project' };
                 setTimeout(async () => {
-                    if (confirm('บันทึกข้อมูลสรุปงานสำเร็จ! คุณต้องการเปิดแอป LINE เพื่อแชร์สรุปงานนี้เข้ากลุ่มหรือไม่?')) {
-                        try {
-                            const mem = members.find(m => m.id === data.member_id) || { nickname: 'Unknown', line_name: '' };
-                            const itemForText = { ...data, proj, mem };
-                            const textToSend = await generateSummaryText(itemForText);
-                            
-                            const lineUrl = 'https://line.me/R/msg/text/?' + encodeURIComponent(textToSend);
-                            window.open(lineUrl, '_blank');
-                        } catch (lineErr) {
-                            console.error("Failed to generate LINE message:", lineErr);
-                            alert('เกิดข้อผิดพลาดในการสร้างข้อความสำหรับแชร์ไปยัง LINE');
+                    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                    try {
+                        const mem = members.find(m => m.id === data.member_id) || { nickname: 'Unknown', line_name: '' };
+                        const itemForText = { ...data, proj, mem };
+                        const textToSend = await generateSummaryText(itemForText);
+                        
+                        if (isMobile) {
+                            if (confirm('บันทึกข้อมูลสรุปงานสำเร็จ! คุณต้องการเปิดแอป LINE เพื่อแชร์สรุปงานนี้เข้ากลุ่มหรือไม่?')) {
+                                const lineUrl = 'line://share?text=' + encodeURIComponent(textToSend);
+                                window.location.href = lineUrl;
+                            }
+                        } else {
+                            // PC Workaround due to LINE Desktop bugs and QR code blocking
+                            if (confirm('บันทึกข้อมูลสรุปงานสำเร็จ!\n\nระบบจะทำการ "คัดลอกข้อความ" สรุปงานให้คุณ เพื่อนำไปวาง (Ctrl+V) ในแอป LINE บนคอมพิวเตอร์ด้วยตนเอง\n\nต้องการคัดลอกข้อความตอนนี้เลยหรือไม่?')) {
+                                navigator.clipboard.writeText(textToSend).then(() => {
+                                    alert('คัดลอกข้อความสำเร็จ! กรุณาเปิดแอป LINE แล้วกดวาง (Ctrl+V) ได้เลยครับ');
+                                }).catch(() => {
+                                    alert('คัดลอกข้อความไม่สำเร็จ กรุณากดคัดลอกเอง');
+                                });
+                            }
                         }
+                    } catch (lineErr) {
+                        console.error("Failed to generate LINE message:", lineErr);
+                        alert('เกิดข้อผิดพลาดในการสร้างข้อความสำหรับแชร์ไปยัง LINE');
                     }
                 }, 100);
             }

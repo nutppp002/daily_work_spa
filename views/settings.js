@@ -54,9 +54,14 @@ export async function renderSettingsView(container, user) {
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <h6 class="card-subtitle text-muted fw-bold">การแจ้งเตือน #${index + 1}</h6>
-                            <button type="button" class="btn btn-sm btn-outline-danger remove-noti-btn" data-index="${index}">
-                                <i class="bi bi-trash"></i> ลบ
-                            </button>
+                            <div>
+                                <button type="button" class="btn btn-sm btn-outline-info test-noti-btn me-2" data-index="${index}">
+                                    <i class="bi bi-send"></i> ทดสอบส่ง
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-danger remove-noti-btn" data-index="${index}">
+                                    <i class="bi bi-trash"></i> ลบ
+                                </button>
+                            </div>
                         </div>
                         <div class="row mb-3">
                             <div class="col-md-3">
@@ -78,6 +83,23 @@ export async function renderSettingsView(container, user) {
                 const idx = e.currentTarget.getAttribute('data-index');
                 notifications.splice(idx, 1);
                 renderNotifications();
+            });
+        });
+        
+        document.querySelectorAll('.test-noti-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const idx = e.currentTarget.getAttribute('data-index');
+                const message = notifications[idx].message;
+                if (!message) {
+                    alert('กรุณากรอกข้อความแจ้งเตือนก่อนทดสอบ');
+                    return;
+                }
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+                const { testNotification } = await import('../services/cron.js?v=1.3');
+                await testNotification(message);
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-send"></i> ทดสอบส่ง';
             });
         });
         

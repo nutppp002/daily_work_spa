@@ -86,3 +86,56 @@ async function checkMorningNotify() {
         console.error("[CRON] Main Error:", error);
     }
 }
+
+export async function testNotification(message) {
+    try {
+        const projects = await getProjects();
+        const activeProjects = projects.filter(p => p.active == 1 && p.line_token && p.line_group_id);
+        
+        if (activeProjects.length === 0) {
+            alert('ไม่พบโครงการที่เปิดใช้งาน หรือยังไม่ได้ตั้งค่า LINE Token/Group ID ในเมนูจัดการโครงการ');
+            return;
+        }
+
+        let successCount = 0;
+        let lastError = "";
+        for (const proj of activeProjects) {
+            try {
+                const apiUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+                                ? '/daily_work_spa/api/line_bot.php' 
+                                : '/api/line_bot.php';
+
+                const res = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        token: proj.line_token,
+                        to: proj.line_group_id,
+                        message: message || "ทดสอบระบบแจ้งเตือนอัตโนมัติ"
+                    })
+                });
+                
+                const responseData = await res.json();
+                
+                if(res.ok) {
+                    successCount++;
+                } else {
+                    lastError = responseData.error || responseData.message || JSON.stringify(responseData);
+                    console.error(`[TEST] Error response from PHP for project ${proj.name}:`, responseData);
+                }
+            } catch (e) {
+                lastError = e.message;
+                console.error(`[TEST] Exception sending for project ${proj.name}:`, e);
+            }
+        }
+        
+        if(successCount > 0) {
+            alert(`ทดสอบส่งข้อความสำเร็จ ${successCount} โครงการ! กรุณาเช็คในกลุ่ม LINE ครับ`);
+        } else {
+            alert(`ส่งข้อความล้มเหลว!\n\nสาเหตุ: ${lastError}\n\n(เช็คความถูกต้องของ Token, Group ID หรือการตั้งค่าอื่นๆ อีกครั้งครับ)`);
+        }
+    } catch (error) {
+        console.error("[TEST] Main Error:", error);
+        alert('เกิดข้อผิดพลาด: ' + error.message);
+    }
+}

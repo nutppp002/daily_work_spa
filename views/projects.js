@@ -158,12 +158,12 @@ export async function renderProjectsView(container, user) {
         
         const id = document.getElementById('proj_id').value;
         const data = {
-            name: document.getElementById('proj_name').value,
-            hospital: document.getElementById('proj_hospital').value,
+            name: document.getElementById('proj_name').value.trim(),
+            hospital: document.getElementById('proj_hospital').value.trim(),
             color: document.getElementById('proj_color').value,
             sort_order: document.getElementById('proj_sort').value,
-            line_token: document.getElementById('proj_line_token').value,
-            line_group_id: document.getElementById('proj_line_group_id').value,
+            line_token: document.getElementById('proj_line_token').value.trim(),
+            line_group_id: document.getElementById('proj_line_group_id').value.trim(),
             active: 1
         };
         
