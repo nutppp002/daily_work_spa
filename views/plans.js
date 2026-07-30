@@ -294,23 +294,21 @@ export async function renderPlansView(container, user) {
         let dateStr = d.toLocaleDateString('th-TH', dateOptions);
         dateStr = dateStr.replace('พ.ศ.', '').trim();
         
-        let text = `===================================\n`;
-        text += `  แผนงานเช้า — ${dateStr}\n`;
-        text += `===================================\n`;
+        let text = `แผนงานประจำวัน : ${dateStr}\n`;
+        text += `ชื่อ : ${itemForText.mem.nickname || itemForText.mem.line_name}\n`;
+        text += `==============================\n`;
         
         catConfig.forEach(cat => {
             const catTasks = (itemForText.tasks || []).filter(t => t.category === cat.name);
             if (catTasks.length > 0) {
-                text += `  ${cat.name}\n`;
+                text += `${cat.name}\n`;
                 catTasks.forEach((t, idx) => {
-                    text += `  ${idx + 1}. ${t.text}\n`;
+                    text += `${idx + 1}. ${t.text}\n`;
                 });
             }
         });
         
-        text += `-----------------------------------\n`;
-        text += `  ${itemForText.mem.line_name || itemForText.mem.nickname} รายงาน\n`;
-        text += `===================================\n`;
+        text += `==============================`;
 
         return text;
     }
