@@ -295,7 +295,7 @@ export async function renderPlansView(container, user) {
         dateStr = dateStr.replace('พ.ศ.', '').trim();
         
         let text = `แผนงานประจำวัน : ${dateStr}\n`;
-        text += `ชื่อ : ${itemForText.mem.nickname || itemForText.mem.line_name}\n`;
+        text += `ชื่อ : ${itemForText.mem.line_name || itemForText.mem.nickname}\n`;
         text += `==============================\n`;
         
         catConfig.forEach(cat => {
