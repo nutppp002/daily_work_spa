@@ -627,8 +627,7 @@ export async function renderSummariesView(container, user) {
                             } else {
                                 // PC Workaround due to LINE Desktop bugs and QR code blocking
                                 navigator.clipboard.writeText(textToSend).then(() => {
-                                    alert('เนื่องจากข้อจำกัดของ LINE บนคอมพิวเตอร์ ระบบได้ "คัดลอกข้อความ" ไว้ให้แล้ว\nกรุณากด "วาง" (Ctrl+V) ในแชทได้เลยครับ!');
-                                    window.location.href = 'line://';
+                                    alert('เนื่องจากข้อจำกัดของแอป LINE บนคอมพิวเตอร์\nระบบได้ "คัดลอกข้อความ" ไว้ให้แล้วครับ\n\nรบกวนเปิดแอป LINE ด้วยตัวเอง แล้วกด "วาง" (Ctrl+V) ในกลุ่มได้เลยครับ');
                                 }).catch(() => {
                                     alert('คัดลอกข้อความไม่สำเร็จ กรุณากดคัดลอกเอง');
                                 });
