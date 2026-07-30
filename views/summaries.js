@@ -620,7 +620,7 @@ export async function renderSummariesView(container, user) {
                             const itemForText = { ...data, proj, mem };
                             const textToSend = await generateSummaryText(itemForText);
                             
-                            const lineUrl = 'https://line.me/R/msg/text/?' + encodeURIComponent(textToSend);
+                            const lineUrl = 'line://msg/text/' + encodeURIComponent(textToSend);
                             window.open(lineUrl, '_blank');
                         } catch (lineErr) {
                             console.error("Failed to generate LINE message:", lineErr);
