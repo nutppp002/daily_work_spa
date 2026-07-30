@@ -621,7 +621,7 @@ export async function renderSummariesView(container, user) {
                             const textToSend = await generateSummaryText(itemForText);
                             
                             const lineUrl = 'line://msg/text/' + encodeURIComponent(textToSend);
-                            window.open(lineUrl, '_blank');
+                            window.location.href = lineUrl;
                         } catch (lineErr) {
                             console.error("Failed to generate LINE message:", lineErr);
                             alert('เกิดข้อผิดพลาดในการสร้างข้อความสำหรับแชร์ไปยัง LINE');

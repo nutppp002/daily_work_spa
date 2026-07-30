@@ -356,7 +356,7 @@ export async function renderPlansView(container, user) {
                         const textToSend = await generatePlanText(itemForText);
                         
                         const lineUrl = 'line://msg/text/' + encodeURIComponent(textToSend);
-                        window.open(lineUrl, '_blank');
+                        window.location.href = lineUrl;
                     } catch (lineErr) {
                         console.error("Failed to generate LINE message:", lineErr);
                         alert('เกิดข้อผิดพลาดในการสร้างข้อความสำหรับแชร์ไปยัง LINE');
