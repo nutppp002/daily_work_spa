@@ -347,28 +347,30 @@ export async function renderPlansView(container, user) {
             const proj = projects.find(p => String(p.id) === String(data.project_id)) || { name: 'Unknown Project' };
             
             setTimeout(async () => {
-                if (confirm('บันทึกข้อมูลแผนงานสำเร็จ! คุณต้องการเปิดแอป LINE เพื่อแชร์แผนงานนี้เข้ากลุ่มหรือไม่?')) {
-                    try {
-                        const mem = members.find(m => m.id === data.member_id) || { nickname: 'Unknown', line_name: '' };
-                        const itemForText = { ...data, proj, mem };
-                        const textToSend = await generatePlanText(itemForText);
-                        
-                        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-                        if (isMobile) {
+                const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                try {
+                    const mem = members.find(m => m.id === data.member_id) || { nickname: 'Unknown', line_name: '' };
+                    const itemForText = { ...data, proj, mem };
+                    const textToSend = await generatePlanText(itemForText);
+                    
+                    if (isMobile) {
+                        if (confirm('บันทึกข้อมูลแผนงานสำเร็จ! คุณต้องการเปิดแอป LINE เพื่อแชร์แผนงานนี้เข้ากลุ่มหรือไม่?')) {
                             const lineUrl = 'line://share?text=' + encodeURIComponent(textToSend);
                             window.location.href = lineUrl;
-                        } else {
-                            // PC Workaround due to LINE Desktop bugs and QR code blocking
+                        }
+                    } else {
+                        // PC Workaround
+                        if (confirm('บันทึกข้อมูลแผนงานสำเร็จ!\n\nระบบจะทำการ "คัดลอกข้อความ" แผนงานให้คุณ เพื่อนำไปวาง (Ctrl+V) ในแอป LINE บนคอมพิวเตอร์ด้วยตนเอง\n\nต้องการคัดลอกข้อความตอนนี้เลยหรือไม่?')) {
                             navigator.clipboard.writeText(textToSend).then(() => {
-                                alert('เนื่องจากข้อจำกัดของแอป LINE บนคอมพิวเตอร์\nระบบได้ "คัดลอกข้อความ" ไว้ให้แล้วครับ\n\nรบกวนเปิดแอป LINE ด้วยตัวเอง แล้วกด "วาง" (Ctrl+V) ในกลุ่มได้เลยครับ');
+                                alert('คัดลอกข้อความสำเร็จ! กรุณาเปิดแอป LINE แล้วกดวาง (Ctrl+V) ได้เลยครับ');
                             }).catch(() => {
                                 alert('คัดลอกข้อความไม่สำเร็จ กรุณากดคัดลอกเอง');
                             });
                         }
-                    } catch (lineErr) {
-                        console.error("Failed to generate LINE message:", lineErr);
-                        alert('เกิดข้อผิดพลาดในการสร้างข้อความสำหรับแชร์ไปยัง LINE');
                     }
+                } catch (lineErr) {
+                    console.error("Failed to generate LINE message:", lineErr);
+                    alert('เกิดข้อผิดพลาดในการสร้างข้อความสำหรับแชร์ไปยัง LINE');
                 }
             }, 100);
 
