@@ -98,6 +98,7 @@ export async function testNotification(message) {
         }
 
         let successCount = 0;
+        let lastError = "";
         for (const proj of activeProjects) {
             try {
                 const apiUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
@@ -113,16 +114,25 @@ export async function testNotification(message) {
                         message: message || "ทดสอบระบบแจ้งเตือนอัตโนมัติ"
                     })
                 });
-                if(res.ok) successCount++;
+                
+                const responseData = await res.json();
+                
+                if(res.ok) {
+                    successCount++;
+                } else {
+                    lastError = responseData.error || responseData.message || JSON.stringify(responseData);
+                    console.error(`[TEST] Error response from PHP for project ${proj.name}:`, responseData);
+                }
             } catch (e) {
-                console.error(`[TEST] Error sending for project ${proj.name}:`, e);
+                lastError = e.message;
+                console.error(`[TEST] Exception sending for project ${proj.name}:`, e);
             }
         }
         
         if(successCount > 0) {
             alert(`ทดสอบส่งข้อความสำเร็จ ${successCount} โครงการ! กรุณาเช็คในกลุ่ม LINE ครับ`);
         } else {
-            alert('ส่งข้อความล้มเหลว กรุณาเช็ค Console (F12) สำหรับรายละเอียด Error');
+            alert(`ส่งข้อความล้มเหลว!\n\nสาเหตุ: ${lastError}\n\n(เช็คความถูกต้องของ Token, Group ID หรือการตั้งค่าอื่นๆ อีกครั้งครับ)`);
         }
     } catch (error) {
         console.error("[TEST] Main Error:", error);
