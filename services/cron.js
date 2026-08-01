@@ -1,4 +1,4 @@
-import { getSettings, saveSettings } from './settings.js?v=1.1';
+import { getSettings, saveSettings, tryMarkNotificationSent } from './settings.js?v=1.1';
 import { getProjects } from './projects.js?v=1.1';
 
 let cronInterval = null;
@@ -31,11 +31,11 @@ async function checkMorningNotify() {
         const todayStr = `${year}-${month}-${day}`;
 
         let lastNotifiedDates = settings.last_notified_dates || {};
-        let needsSave = false;
 
         // Migrate legacy last notification date if present
         if (settings.last_morning_notify_date && !lastNotifiedDates['default_morning']) {
             lastNotifiedDates['default_morning'] = settings.last_morning_notify_date;
+            await saveSettings({ last_notified_dates: lastNotifiedDates });
         }
 
         const projects = await getProjects();
@@ -48,12 +48,20 @@ async function checkMorningNotify() {
 
             // Check if current time is exactly or past the notify time
             if (currentTime >= noti.time) {
-                // Check if we already sent it today
+                // Check if we locally think it hasn't been sent today
                 if (lastNotifiedDates[notiId] !== todayStr) {
+                    
+                    // Try to atomically mark it as sent for today
+                    const canSend = await tryMarkNotificationSent(notiId, todayStr);
+                    if (!canSend) {
+                        // Another client already sent it, update local state
+                        lastNotifiedDates[notiId] = todayStr;
+                        continue;
+                    }
+
                     console.log(`[CRON] Triggering notification ${noti.time}...`);
                     
                     lastNotifiedDates[notiId] = todayStr;
-                    needsSave = true;
 
                     for (const proj of activeProjects) {
                         try {
@@ -77,10 +85,6 @@ async function checkMorningNotify() {
                     }
                 }
             }
-        }
-
-        if (needsSave) {
-            await saveSettings({ last_notified_dates: lastNotifiedDates });
         }
     } catch (error) {
         console.error("[CRON] Main Error:", error);
