@@ -51,8 +51,14 @@ async function checkMorningNotify() {
                 // Check if we locally think it hasn't been sent today
                 if (lastNotifiedDates[notiId] !== todayStr) {
                     
-                    // Try to atomically mark it as sent for today
-                    const canSend = await tryMarkNotificationSent(notiId, todayStr);
+                    let canSend = false;
+                    try {
+                        canSend = await tryMarkNotificationSent(notiId, todayStr);
+                    } catch (err) {
+                        console.error("[CRON] Failed to mark notification sent, will retry:", err);
+                        continue; // ข้ามไปก่อน จะลองใหม่ในรอบถัดไป
+                    }
+
                     if (!canSend) {
                         // Another client already sent it, update local state
                         lastNotifiedDates[notiId] = todayStr;

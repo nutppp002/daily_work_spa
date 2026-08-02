@@ -63,6 +63,6 @@ export async function tryMarkNotificationSent(notiId, dateStr) {
         return result;
     } catch (e) {
         console.error("Transaction failed: ", e);
-        return false;
+        throw e;
     }
 }
